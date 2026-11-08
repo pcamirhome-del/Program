@@ -1,0 +1,19 @@
+{
+  "id": "/",
+  "name": "Vanguard Index — Cross-Platform Software & FOSS Discovery Engine",
+  "short_name": "Vanguard",
+  "description": "Unified cross-platform software discovery engine for PC, Android, and iPhone with offline IndexedDB Wishlist and Firebase sync.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#070B14",
+  "theme_color": "#070B14",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,145 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net: Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Hardened Global Helpers
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedOwner(userId) {
+      return isSignedIn() && request.auth.token.email_verified == true && request.auth.uid == userId;
+    }
+
+    // Validation Blueprint: SavedApp
+    function isValidSavedApp(data, userId) {
+      return data.keys().hasAll([
+        'appKey',
+        'ownerId',
+        'platform',
+        'name',
+        'developer',
+        'iconUrl',
+        'primaryUrl',
+        'secondaryUrl',
+        'category',
+        'license',
+        'version',
+        'notes',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'appKey',
+        'ownerId',
+        'platform',
+        'name',
+        'developer',
+        'iconUrl',
+        'primaryUrl',
+        'secondaryUrl',
+        'category',
+        'license',
+        'version',
+        'notes',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.appKey is string && data.appKey.size() >= 1 && data.appKey.size() <= 120 && data.appKey.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 && data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.ownerId == request.auth.uid && data.ownerId == userId &&
+      data.platform is string && data.platform.size() <= 16 && (data.platform == 'pc' || data.platform == 'android' || data.platform == 'ios') &&
+      data.name is string && data.name.size() >= 1 && data.name.size() <= 160 &&
+      data.developer is string && data.developer.size() >= 1 && data.developer.size() <= 160 &&
+      data.iconUrl is string && data.iconUrl.size() <= 1024 &&
+      data.primaryUrl is string && data.primaryUrl.size() >= 1 && data.primaryUrl.size() <= 1024 &&
+      data.secondaryUrl is string && data.secondaryUrl.size() <= 1024 &&
+      data.category is string && data.category.size() <= 80 &&
+      data.license is string && data.license.size() <= 80 &&
+      data.version is string && data.version.size() <= 64 &&
+      data.notes is string && data.notes.size() <= 500 &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    // Validation Blueprint: SearchHistoryItem
+    function isValidSearchHistoryItem(data, userId) {
+      return data.keys().hasAll([
+        'query',
+        'platform',
+        'ownerId',
+        'resultCount',
+        'topResultName',
+        'topResultIcon',
+        'createdAt'
+      ]) &&
+      data.keys().hasOnly([
+        'query',
+        'platform',
+        'ownerId',
+        'resultCount',
+        'topResultName',
+        'topResultIcon',
+        'createdAt'
+      ]) &&
+      data.query is string && data.query.size() >= 1 && data.query.size() <= 140 &&
+      data.platform is string && data.platform.size() <= 16 && (data.platform == 'pc' || data.platform == 'android' || data.platform == 'ios') &&
+      data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 && data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.ownerId == request.auth.uid && data.ownerId == userId &&
+      data.resultCount is int && data.resultCount >= 0 && data.resultCount <= 500 &&
+      data.topResultName is string && data.topResultName.size() <= 160 &&
+      data.topResultIcon is string && data.topResultIcon.size() <= 1024 &&
+      data.createdAt is timestamp;
+    }
+
+    // User-scoped Saved Apps collection
+    match /users/{userId}/savedApps/{appId} {
+      allow get: if isSignedIn() && isValidId(userId) && isValidId(appId) && request.auth.uid == userId && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && request.auth.uid == userId && existing().ownerId == request.auth.uid;
+      allow create: if isVerifiedOwner(userId) && isValidId(userId) && isValidId(appId) &&
+        isValidSavedApp(incoming(), userId) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isVerifiedOwner(userId) && isValidId(userId) && isValidId(appId) &&
+        isValidSavedApp(incoming(), userId) &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().appKey == existing().appKey &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time && (
+          // Action 1: Edit Notes
+          incoming().diff(existing()).affectedKeys().hasOnly(['notes', 'updatedAt']) ||
+          // Action 2: Refresh Metadata
+          incoming().diff(existing()).affectedKeys().hasOnly(['version', 'primaryUrl', 'secondaryUrl', 'iconUrl', 'notes', 'updatedAt'])
+        );
+      allow delete: if isVerifiedOwner(userId) && isValidId(userId) && isValidId(appId) && existing().ownerId == request.auth.uid;
+    }
+
+    // User-scoped Search History collection
+    match /users/{userId}/searchHistory/{historyId} {
+      allow get: if isSignedIn() && isValidId(userId) && isValidId(historyId) && request.auth.uid == userId && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && request.auth.uid == userId && existing().ownerId == request.auth.uid;
+      allow create: if isVerifiedOwner(userId) && isValidId(userId) && isValidId(historyId) &&
+        isValidSearchHistoryItem(incoming(), userId) &&
+        incoming().createdAt == request.time;
+      allow update: if false;
+      allow delete: if isVerifiedOwner(userId) && isValidId(userId) && isValidId(historyId) && existing().ownerId == request.auth.uid;
+    }
+  }
+}

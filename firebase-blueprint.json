@@ -1,0 +1,173 @@
+{
+  "entities": {
+    "SavedApp": {
+      "title": "SavedApp",
+      "description": "A software package or mobile app saved by an authenticated user in their personal cross-platform library.",
+      "type": "object",
+      "properties": {
+        "appKey": {
+          "type": "string",
+          "description": "Normalized unique identifier for the software entry.",
+          "minLength": 1,
+          "maxLength": 120,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerId": {
+          "type": "string",
+          "description": "UID of the user who owns this saved software record.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "platform": {
+          "type": "string",
+          "description": "Target OS platform of the software.",
+          "enum": ["pc", "android", "ios"],
+          "maxLength": 16
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of the software or application.",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "developer": {
+          "type": "string",
+          "description": "Publisher, maintainer, or developer name.",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "iconUrl": {
+          "type": "string",
+          "description": "Thumbnail or icon URL for the software.",
+          "maxLength": 1024
+        },
+        "primaryUrl": {
+          "type": "string",
+          "description": "Official store or website URL.",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "secondaryUrl": {
+          "type": "string",
+          "description": "Direct installer, F-Droid repository, or secondary download link.",
+          "maxLength": 1024
+        },
+        "category": {
+          "type": "string",
+          "description": "Primary software category or genre.",
+          "maxLength": 80
+        },
+        "license": {
+          "type": "string",
+          "description": "Software license model (e.g., GPL-3.0, MIT, Proprietary, App Store).",
+          "maxLength": 80
+        },
+        "version": {
+          "type": "string",
+          "description": "Latest discovered version string.",
+          "maxLength": 64
+        },
+        "notes": {
+          "type": "string",
+          "description": "User personal notes or tags for this software.",
+          "maxLength": 500
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the item was saved."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the item was last updated."
+        }
+      },
+      "required": [
+        "appKey",
+        "ownerId",
+        "platform",
+        "name",
+        "developer",
+        "iconUrl",
+        "primaryUrl",
+        "secondaryUrl",
+        "category",
+        "license",
+        "version",
+        "notes",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "SearchHistoryItem": {
+      "title": "SearchHistoryItem",
+      "description": "A record of a live cross-platform search executed by an authenticated user.",
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Search term entered by the user.",
+          "minLength": 1,
+          "maxLength": 140
+        },
+        "platform": {
+          "type": "string",
+          "description": "Selected platform at the time of search.",
+          "enum": ["pc", "android", "ios"],
+          "maxLength": 16
+        },
+        "ownerId": {
+          "type": "string",
+          "description": "UID of the user who executed the search.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "resultCount": {
+          "type": "integer",
+          "description": "Number of live results returned."
+        },
+        "topResultName": {
+          "type": "string",
+          "description": "Name of the primary matched software.",
+          "maxLength": 160
+        },
+        "topResultIcon": {
+          "type": "string",
+          "description": "Thumbnail icon URL of the primary matched software.",
+          "maxLength": 1024
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the search was recorded."
+        }
+      },
+      "required": [
+        "query",
+        "platform",
+        "ownerId",
+        "resultCount",
+        "topResultName",
+        "topResultIcon",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/savedApps/{appId}": {
+      "schema": {
+        "$ref": "#/entities/SavedApp"
+      },
+      "description": "User-scoped collection of bookmarked PC, Android, and iOS software packages."
+    },
+    "/users/{userId}/searchHistory/{historyId}": {
+      "schema": {
+        "$ref": "#/entities/SearchHistoryItem"
+      },
+      "description": "User-scoped log of recent live software searches."
+    }
+  }
+}

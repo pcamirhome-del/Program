@@ -1,0 +1,6 @@
+{
+  "name": "Vanguard Index",
+  "description": "Unified cross-platform software discovery engine for PC (Windows), Android, and iOS with live store scraping, official installers, F-Droid repositories, and FOSS alternatives.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
