@@ -22,6 +22,7 @@ import {
 import type { BulkInstallItem } from '../types.ts';
 import { AppIcon } from './AppIcon.tsx';
 import { useTranslation } from 'react-i18next';
+import { API_BASE_URL } from '../services/apiClient.ts';
 
 interface AutoInstallerEngineProps {
   items: BulkInstallItem[];
@@ -75,7 +76,7 @@ export const AutoInstallerEngine: React.FC<AutoInstallerEngineProps> = ({
     items.forEach((item) => {
       if (item.platform === 'pc' && (!item.wingetId || !item.chocoId)) {
         fetch(
-          `/api/resolve-bulk-item?platform=pc&packageId=${encodeURIComponent(
+          `${API_BASE_URL}/resolve-bulk-item?platform=pc&packageId=${encodeURIComponent(
             item.packageId
           )}&name=${encodeURIComponent(item.name)}&fallbackUrl=${encodeURIComponent(
             item.primaryDownloadUrl
@@ -95,7 +96,7 @@ export const AutoInstallerEngine: React.FC<AutoInstallerEngineProps> = ({
           });
       } else if (item.platform === 'android' && !item.directApkUrl) {
         fetch(
-          `/api/resolve-bulk-item?platform=android&packageId=${encodeURIComponent(
+          `${API_BASE_URL}/resolve-bulk-item?platform=android&packageId=${encodeURIComponent(
             item.packageId
           )}&name=${encodeURIComponent(item.name)}&fallbackUrl=${encodeURIComponent(
             item.primaryDownloadUrl
@@ -411,7 +412,7 @@ export const AutoInstallerEngine: React.FC<AutoInstallerEngineProps> = ({
       if (!targetApkUrl) {
         try {
           const res = await fetch(
-            `/api/resolve-bulk-item?platform=android&packageId=${encodeURIComponent(
+            `${API_BASE_URL}/resolve-bulk-item?platform=android&packageId=${encodeURIComponent(
               item.packageId
             )}&name=${encodeURIComponent(item.name)}&fallbackUrl=${encodeURIComponent(
               item.primaryDownloadUrl

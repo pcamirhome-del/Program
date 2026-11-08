@@ -52,6 +52,7 @@ import { HomepageCarousels } from './components/HomepageCarousels.tsx';
 import { WishlistView } from './components/WishlistView.tsx';
 import { AutoInstallerEngine } from './components/AutoInstallerEngine.tsx';
 import { AppIcon } from './components/AppIcon.tsx';
+import { API_BASE_URL } from './services/apiClient.ts';
 
 type ActiveSection = 'discover' | 'library' | 'history' | 'sources';
 
@@ -311,7 +312,7 @@ export default function App() {
         }
 
         const res = await fetch(
-          `/api/search?q=${encodeURIComponent(trimmed)}&platform=${encodeURIComponent(targetPlatform)}`
+          `${API_BASE_URL}/search?q=${encodeURIComponent(trimmed)}&platform=${encodeURIComponent(targetPlatform)}`
         );
         if (!res.ok) {
           const errJson = (await res.json().catch(() => ({}))) as { error?: string };

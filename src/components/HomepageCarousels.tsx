@@ -22,6 +22,7 @@ import type {
 } from '../types.ts';
 import { AppIcon } from './AppIcon.tsx';
 import { sanitizeId } from '../lib/firebase.ts';
+import { API_BASE_URL } from '../services/apiClient.ts';
 
 interface HomepageCarouselsProps {
   activePlatform: PlatformType;
@@ -362,7 +363,7 @@ export const HomepageCarousels: React.FC<HomepageCarouselsProps> = ({
     let cancelled = false;
     setIsLoading(true);
 
-    fetch(`/api/carousels?platform=${encodeURIComponent(activePlatform)}`)
+    fetch(`${API_BASE_URL}/carousels?platform=${encodeURIComponent(activePlatform)}`)
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error('Failed to load carousels'))))
       .then((data: HomepageCarouselsResponse) => {
         if (!cancelled) {

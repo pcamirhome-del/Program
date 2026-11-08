@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import type { AutocompleteSuggestion, PlatformType } from '../types.ts';
 import { AppIcon } from './AppIcon.tsx';
+import { API_BASE_URL } from '../services/apiClient.ts';
 
 interface SearchBarWithAutocompleteProps {
   query: string;
@@ -72,7 +73,7 @@ export const SearchBarWithAutocomplete: React.FC<SearchBarWithAutocompleteProps>
       setIsLoadingSuggestions(true);
       try {
         const res = await fetch(
-          `/api/autocomplete?q=${encodeURIComponent(trimmed)}&platform=${encodeURIComponent(platform)}`,
+          `${API_BASE_URL}/autocomplete?q=${encodeURIComponent(trimmed)}&platform=${encodeURIComponent(platform)}`,
           { signal: controller.signal }
         );
         if (res.ok) {
